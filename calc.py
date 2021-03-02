@@ -237,7 +237,7 @@ def press_key(event):
 calc = Tk()
 
 # Размер окна.
-calc.geometry('240x339')
+calc.geometry('247x339')
 
 calc.resizable(width=False, height=False)
 
@@ -290,7 +290,7 @@ make_percent('%').grid(row=1, column=0, stick='wens', padx=3, pady=3)
 make_minus('+/-').grid(row=5, column=0, stick='wens', padx=3, pady=3)
 make_calc('=').grid(row=5, column=3, stick='wens', padx=3, pady=3)
 make_clear('C').grid(row=1, column=2, stick='wens', padx=3, pady=3)
-make_del('<-').grid(row=1, column=1, stick='wens', padx=3, pady=3)
+make_del('DEL').grid(row=1, column=1, stick='wens', padx=3, pady=3)
 
 # С помощью метода grid_column(row)configure задаем минимальный размер колонок(column) и строк(row).
 calc.grid_columnconfigure(0, minsize=60)
