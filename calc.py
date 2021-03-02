@@ -1,5 +1,4 @@
 from tkinter import *
-
 """
 Добавляем цифру в строку ввода; 
 С помощью метода get получаем данные в строке ввода и прибавляем к ним в виде строки нашу цифру;
@@ -22,12 +21,9 @@ def add_num(number):
 def add_operation(operation):
     value = entry_calc.get()
 
-    if value[-1] in '-+÷×,':
+    if value[-1] in '-+÷×.':
         # При помощи среза сохраняем все, кроме последней операции.
         value = value[:-1]
-
-    if ',' in value:
-        calculate()
 
     # Если уже есть операция, то вычисляем и затем выводим новое значение.
     elif '+' in value or '-' in value or '÷' in value or '×' in value:
@@ -57,12 +53,6 @@ def calculate():
             break
         k += 1
 
-    k = 0
-    for i in value:
-        if i == ',':
-            value = value[0:k] + '.' + value[k + 1:]
-        k += 1
-
     # Выполняем действие числа с числом, если последний символ в строке-знак операции.
     if value[-1] in '+-/*':
         value = value + value[:-1]
@@ -75,6 +65,46 @@ def calculate():
     except (NameError, SyntaxError, ZeroDivisionError):
         clear()
         entry_calc['state'] = DISABLED
+
+
+def comma_to_point():
+    value = entry_calc.get()
+    if value[-1] in '-+÷×':
+        entry_calc['state'] = NORMAL
+        entry_calc.delete(0, END)
+        entry_calc.insert(0, value + '0' + '.')
+        entry_calc['state'] = DISABLED
+    elif '+' in value or '-' in value or '÷' in value or '×' in value:
+        k = 0
+        for i in value:
+            if i == '+' or i == '-' or i == '÷' or i == '×':
+                break
+            k += 1
+
+        k = 0
+        for i in value[k:]:
+            if i == '.':
+                k += 1
+
+        if k < 1:
+            value = value + '.'
+            entry_calc['state'] = NORMAL
+            entry_calc.delete(0, END)
+            entry_calc.insert(0, value)
+            entry_calc['state'] = DISABLED
+
+    else:
+        k = 0
+
+        for i in value:
+            if i == '.':
+                k += 1
+        if k < 1:
+            value = value + '.'
+            entry_calc['state'] = NORMAL
+            entry_calc.delete(0, END)
+            entry_calc.insert(0, value)
+            entry_calc['state'] = DISABLED
 
 
 def calculate_per():
@@ -95,6 +125,52 @@ def calculate_per():
         entry_calc['state'] = DISABLED
 
 
+def plus_to_minus():
+    value = entry_calc.get()
+    if value[0] == "0" and len(value) == 1:
+        clear()
+
+    elif '+' in value or '-' in value or '÷' in value or '×' in value:
+        calculate()
+        value = entry_calc.get()
+        entry_calc['state'] = NORMAL
+        k = 0
+        for i in value:
+            if i == '.':
+                k += 1
+        if k > 0:
+            entry_calc.delete(0, END)
+            entry_calc.insert(0, float(value) / (-1))
+        else:
+            entry_calc.delete(0, END)
+            entry_calc.insert(0, int(value) * (-1))
+        entry_calc['state'] = DISABLED
+    else:
+        entry_calc['state'] = NORMAL
+        k = 0
+        for i in value:
+            if i == '.':
+                k += 1
+        if k > 0:
+            entry_calc.delete(0, END)
+            entry_calc.insert(0, float(value) / (-1))
+        else:
+            entry_calc.delete(0, END)
+            entry_calc.insert(0, int(value) * (-1))
+        entry_calc['state'] = DISABLED
+
+
+def del_symbol():
+    value = entry_calc.get()
+    if len(value) > 1:
+        entry_calc['state'] = NORMAL
+        entry_calc.delete(0, END)
+        entry_calc.insert(0, value[:-1])
+        entry_calc['state'] = DISABLED
+    elif len(value) == 1 and value != '0':
+        clear()
+
+
 def clear():
     entry_calc['state'] = NORMAL
     entry_calc.delete(0, END)
@@ -113,23 +189,38 @@ def make_button(number):
 
 # Добавляет операции, с помощью параметра fg меняем цвет.
 def make_operation(operation):
-    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue',
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='thistle2',
                   command=lambda: add_operation(operation))
 
 
 def make_calc(operation):
-    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue',
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='LightCyan2',
                   command=calculate)
 
 
 def make_clear(operation):
-    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue',
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='LightCyan2',
                   command=clear)
 
 
 def make_percent(operation):
-    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue',
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='thistle2',
                   command=calculate_per)
+
+
+def make_minus(operation):
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='thistle2',
+                  command=plus_to_minus)
+
+
+def make_point(operation):
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='thistle2',
+                  command=comma_to_point)
+
+
+def make_del(operation):
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='LightCyan2',
+                  command=del_symbol)
 
 
 # Метод .isdigit проверяет, цифра или нет.
@@ -147,6 +238,8 @@ calc = Tk()
 
 # Размер окна.
 calc.geometry('240x339')
+
+calc.resizable(width=False, height=False)
 
 # Цвет фона окна.
 calc['bg'] = '#CCCCFF'
@@ -184,7 +277,7 @@ make_button('6').grid(row=3, column=2, stick='wens', padx=3, pady=3)
 make_button('7').grid(row=2, column=0, stick='wens', padx=3, pady=3)
 make_button('8').grid(row=2, column=1, stick='wens', padx=3, pady=3)
 make_button('9').grid(row=2, column=2, stick='wens', padx=3, pady=3)
-make_button('0').grid(row=5, column=0, columnspan=2, stick='wens', padx=3, pady=3)
+make_button('0').grid(row=5, column=1, stick='wens', padx=3, pady=3)
 
 # Создаем операции.
 make_operation('+').grid(row=4, column=3, stick='wens', padx=3, pady=3)
@@ -192,10 +285,12 @@ make_operation('-').grid(row=3, column=3, stick='wens', padx=3, pady=3)
 make_operation('÷').grid(row=1, column=3, stick='wens', padx=3, pady=3)
 make_operation('×').grid(row=2, column=3, stick='wens', padx=3, pady=3)
 
-make_operation(',').grid(row=5, column=2, stick='wens', padx=3, pady=3)
-make_percent('%').grid(row=1, column=2, stick='wens', padx=3, pady=3)
+make_point(',').grid(row=5, column=2, stick='wens', padx=3, pady=3)
+make_percent('%').grid(row=1, column=0, stick='wens', padx=3, pady=3)
+make_minus('+/-').grid(row=5, column=0, stick='wens', padx=3, pady=3)
 make_calc('=').grid(row=5, column=3, stick='wens', padx=3, pady=3)
-make_clear('C').grid(row=1, column=0, columnspan=2, stick='wens', padx=3, pady=3)
+make_clear('AC').grid(row=1, column=2, stick='wens', padx=3, pady=3)
+make_del('<-').grid(row=1, column=1, stick='wens', padx=3, pady=3)
 
 # С помощью метода grid_column(row)configure задаем минимальный размер колонок(column) и строк(row).
 calc.grid_columnconfigure(0, minsize=60)
