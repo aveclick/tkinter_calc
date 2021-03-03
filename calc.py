@@ -1,4 +1,5 @@
 from tkinter import *
+
 """
 Добавляем цифру в строку ввода; 
 С помощью метода get получаем данные в строке ввода и прибавляем к ним в виде строки нашу цифру;
@@ -8,13 +9,24 @@ from tkinter import *
 
 
 def add_num(number):
+    global value1
     value = entry_calc.get()
+    if len(value) >= 15:
+        clear()
+        value = entry_calc.get()
     if value[0] == "0" and len(value) == 1:
         value = value[1:]
-    entry_calc['state'] = NORMAL
-    entry_calc.delete(0, END)
-    entry_calc.insert(0, value + number)
-    entry_calc['state'] = DISABLED
+    k = 0
+    for i in value:
+        if i in '+-÷×':
+            value1 = value[k+1:]
+            break
+        k += 1
+    if len(value) <= 5 or (('+' in value or '-' in value or '÷' in value or '×' in value) and (len(value1) <= 5)):
+        entry_calc['state'] = NORMAL
+        entry_calc.delete(0, END)
+        entry_calc.insert(0, value + number)
+        entry_calc['state'] = DISABLED
 
 
 # Знаки операций заменяются друг другом.
@@ -60,8 +72,34 @@ def calculate():
     entry_calc['state'] = NORMAL
     entry_calc.delete(0, END)
     try:
-        entry_calc.insert(0, eval(value))
-        entry_calc['state'] = DISABLED
+        n = 0
+        value = eval(value)
+        value = str(value)
+        for i in value:
+            if i == '.':
+                if value[n+1:] == '0':
+                    value = value[:n]
+                    entry_calc.delete(0, END)
+                    entry_calc.insert(0, value)
+                    entry_calc['state'] = DISABLED
+                    break
+            n += 1
+            if n == len(value):
+                n = 0
+                for i in value:
+                    if i == '.':
+                        n += 1
+                if n == 0:
+                    entry_calc.delete(0, END)
+                    entry_calc.insert(0, value)
+                    entry_calc['state'] = DISABLED
+                    break
+                else:
+                    entry_calc.delete(0, END)
+                    value = float(value)
+                    entry_calc.insert(0, round(value, 2))
+                    entry_calc['state'] = DISABLED
+
     except (NameError, SyntaxError, ZeroDivisionError):
         clear()
         entry_calc['state'] = DISABLED
@@ -108,16 +146,39 @@ def comma_to_point():
 
 
 def calculate_per():
+    global value1
+    global value2
+    global value4
     value = entry_calc.get()
     if value[0] == "0" and len(value) == 1:
         clear()
     elif '+' in value or '-' in value or '÷' in value or '×' in value:
-        calculate()
-        value = entry_calc.get()
-        entry_calc['state'] = NORMAL
-        entry_calc.delete(0, END)
-        entry_calc.insert(0, float(value) / 100)
-        entry_calc['state'] = DISABLED
+        k = 0
+        for i in value:
+            if i in '+-÷×':
+                value1 = value[k+1:]
+                value2 = value[:k]
+                value4 = value[:k+1]
+            k += 1
+        k = 0
+        for i in value:
+            if i == '.':
+                k += 1
+        if k > 0:
+            value3 = (float(value1) * float(value2)) / 100
+            value = str(value4) + str(value3)
+            entry_calc['state'] = NORMAL
+            entry_calc.delete(0, END)
+            entry_calc.insert(0, round(eval(value), 2))
+            entry_calc['state'] = DISABLED
+        else:
+
+            value3 = (int(value1) * int(value2)) // 100
+            value = str(value4) + str(value3)
+            entry_calc['state'] = NORMAL
+            entry_calc.delete(0, END)
+            entry_calc.insert(0, eval(value))
+            entry_calc['state'] = DISABLED
     else:
         entry_calc['state'] = NORMAL
         entry_calc.delete(0, END)
@@ -184,12 +245,12 @@ def clear():
 
 
 def make_button(number):
-    return Button(text=number, font=('Franklin Gothic Medium', 15), command=lambda: add_num(number))
+    return Button(text=number, font=('Franklin Gothic Medium', 15), command=lambda: add_num(number), bg='ghost white')
 
 
 # Добавляет операции, с помощью параметра fg меняем цвет.
 def make_operation(operation):
-    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='thistle2',
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='alice blue',
                   command=lambda: add_operation(operation))
 
 
@@ -204,17 +265,17 @@ def make_clear(operation):
 
 
 def make_percent(operation):
-    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='thistle2',
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='alice blue',
                   command=calculate_per)
 
 
 def make_minus(operation):
-    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='thistle2',
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='alice blue',
                   command=plus_to_minus)
 
 
 def make_point(operation):
-    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='thistle2',
+    return Button(text=operation, font=('Franklin Gothic Medium', 18), fg='blue', bg='alice blue',
                   command=comma_to_point)
 
 
@@ -255,6 +316,7 @@ calc.bind("<Key>", press_key)
 
 entry_calc = Entry(calc, justify=RIGHT, font=('Franklin Gothic Medium', 18), width=15)
 
+
 # Значение по умолчанию-0.
 entry_calc.insert(0, '0')
 entry_calc['state'] = DISABLED
@@ -263,8 +325,8 @@ entry_calc['state'] = DISABLED
 Задаем расположение поля ввода с помощью метода grid, объединяем колонки с помощью атрибута columnspan, 
 растягиваем поле с помощью атрибута stick от west до east(от левой стороны до правой).
 """
-
 entry_calc.grid(row=0, column=0, columnspan=4, stick='we', padx=5, pady=3)
+
 
 # Задаем расстояние между кнопками с помощью атрибутов padx и pady.
 
