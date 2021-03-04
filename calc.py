@@ -11,7 +11,7 @@ from tkinter import *
 def add_num(number):
     global value1
     value = entry_calc.get()
-    if len(value) >= 15:
+    if len(value) >= 16:
         clear()
         value = entry_calc.get()
     if value[0] == "0" and len(value) == 1:
@@ -22,7 +22,7 @@ def add_num(number):
             value1 = value[k+1:]
             break
         k += 1
-    if len(value) <= 5 or (('+' in value or '-' in value or '÷' in value or '×' in value) and (len(value1) <= 5)):
+    if len(value) <= 6 or (('+' in value or '-' in value or '÷' in value or '×' in value) and (len(value1) <= 6)):
         entry_calc['state'] = NORMAL
         entry_calc.delete(0, END)
         entry_calc.insert(0, value + number)
